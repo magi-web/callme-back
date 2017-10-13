@@ -1,0 +1,19 @@
+{
+  "name": "magi-web/callme-back",
+  "description": "WordPress Plugin to add a callme back feature to your website",
+  "keywords": ["wordpress", "plugin", "callme"],
+  "homepage": "https://github.com/magi-web/callme-back",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Mathieu GIRARD",
+      "email": "mgirard.dev@gmail.com",
+      "homepage": "https://github.com/magi-web"
+    }
+  ],
+  "type": "wordpress-plugin",
+  "require": {
+    "php": ">=5.3.2",
+    "composer/installers": "v1.0.6"
+  }
+}
