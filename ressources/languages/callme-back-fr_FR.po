@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Call Me Back\n"
 "POT-Creation-Date: 2017-10-03 23:49+0200\n"
-"PO-Revision-Date: 2017-10-04 00:41+0200\n"
+"PO-Revision-Date: 2017-10-14 16:07+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -25,13 +25,57 @@ msgstr ""
 msgid "Your name"
 msgstr "Votre nom"
 
+#: src/Form/PhoneForm.php:21 src/Form/PhoneForm.php:22
+msgid "Your name :"
+msgstr "Votre nom :"
+
 #: src/Form/PhoneForm.php:26 src/Form/PhoneForm.php:27
 msgid "Your phone number"
 msgstr "Votre numéro de téléphone"
 
 #: src/Form/PhoneForm.php:28
+msgid "Your phone number :"
+msgstr "Votre numéro de téléphone :"
+
+#: src/Form/PhoneForm.php:28
+msgid "This field is mandatory"
+msgstr "Ce champs est obligatoire"
+
+#: src/Form/PhoneForm.php:28
+msgid "[CallMeBack] new Request"
+msgstr "[CallMeBack] Nouvelle demande de rappel"
+
+#: src/Form/PhoneForm.php:28
+msgid "Your request has been successfully submitted.<br>We will call you back as soon as possible."
+msgstr "Votre demande a été enregistrée avec succès.<br>Nous vous rappellerons dès que possible."
+
+#: src/Form/PhoneForm.php:28
+msgid "An error occured while submitting your informations.<br>Please try again later."
+msgstr "Une erreur est survenue lors de l'enregistrement de vos informations.<br>Veuillez réessayer ultérieurement."
+
+#: src/Form/PhoneForm.php:28
+msgid "The form contains some errors. Please review them before."
+msgstr "Le formulaire contient une ou plusieurs erreurs.<br>Veuillez les corriger avant d'effectuer une nouvelle demande."
+
+#: src/Form/PhoneForm.php:28
+msgid "A new callme back request has been submitted !"
+msgstr "Une nouvelle demande de rappel a été enregistrée !"
+
+#: src/Form/PhoneForm.php:28
+msgid "Here are the details :"
+msgstr "Voici les informations :"
+
+#: src/Form/PhoneForm.php:28
+msgid "Name : "
+msgstr "Identité : "
+
+#: src/Form/PhoneForm.php:28
+msgid "Phone number : "
+msgstr "Numéro de téléphone : "
+
+#: src/Form/PhoneForm.php:28
 msgid "CallMe back for free"
-msgstr "Me rappeler grauitement"
+msgstr "Me rappeler gratuitement"
 
 #. Plugin Name of the plugin/theme
 msgid "Call Me Back"
@@ -45,3 +89,77 @@ msgstr ""
 #. Author of the plugin/theme
 msgid "Mathieu Girard"
 msgstr "Mathieu Girard"
+
+#: src/Form/PhoneForm.php:21 src/Form/PhoneForm.php:22
+msgid "Yes"
+msgstr "Oui"
+
+#: src/Form/PhoneForm.php:21 src/Form/PhoneForm.php:22
+msgid "No"
+msgstr "Non"
+
+#: src/Form/PhoneForm.php:21 src/Form/PhoneForm.php:22
+msgid "Name"
+msgstr "Nom"
+
+#: src/Form/PhoneForm.php:21 src/Form/PhoneForm.php:22
+msgid "Phone Number"
+msgstr "Numéro de téléphone"
+
+#: src/Form/PhoneForm.php:21 src/Form/PhoneForm.php:22
+msgid "Date"
+msgstr "Date"
+
+#: src/Form/PhoneForm.php:21 src/Form/PhoneForm.php:22
+msgid "Done"
+msgstr "Traité"
+
+#: src/Form/PhoneForm.php:21 src/Form/PhoneForm.php:22
+msgid "Toggle to Done"
+msgstr "Mettre à Traité"
+
+#: src/Form/PhoneForm.php:21 src/Form/PhoneForm.php:22
+msgid "Toggle to Not done"
+msgstr "Mettre à Non Traité"
+
+#: src/Form/PhoneForm.php:21 src/Form/PhoneForm.php:22
+msgid "No items found."
+msgstr "Aucun élément trouvé."
+
+#: src/Form/PhoneForm.php:21 src/Form/PhoneForm.php:22
+msgid "Phone request"
+msgstr "Demande de rappel"
+
+#: src/Form/PhoneForm.php:21 src/Form/PhoneForm.php:22
+msgid "Phone requests"
+msgstr "Demandes de rappel"
+
+msgid "Phone Requests List"
+msgstr "Liste des demandes de rappel"
+
+msgid "This value does not match the format"
+msgstr "Cette valeur ne respecte pas le format"
+
+msgid "Settings Saved"
+msgstr "Paramètres enregsitrés"
+
+msgid "Save Settings"
+msgstr "Enregsitrer"
+
+msgid "Please fulfill the form"
+msgstr "Veuillez renseigner les champs"
+
+msgid "Phone mask format"
+msgstr "Masque de saisie du téléphone"
+
+msgid "Phone validation format"
+msgstr "Format de validation du téléphone"
+
+msgid "Settings"
+msgstr "Réglages"
+
+msgid "Call Me Back Settings"
+msgstr "Réglages de l'extension"
+
+msgid "Plugin"
+msgstr "Extension"

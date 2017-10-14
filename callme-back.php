@@ -30,6 +30,7 @@ function callmeback_autoloader( $class_name ) {
  * Class CallMeBack
  */
 class CallMeBack {
+    const TEXT_DOMAIN = 'callme-back';
     /** ================================================================================================================
      * Initialisation du plugin
      *
@@ -51,6 +52,24 @@ class CallMeBack {
      */
     protected function _init() {
         CallMeBack_EventDispatcher::getInstance();
+    }
+
+    /**
+     * Returns the current plugin directory
+     *
+     * @return string
+     */
+    public static function getPluginDir() {
+        return plugin_dir_path( __FILE__ );
+    }
+
+    /**
+     * Returns the current plugin directory
+     *
+     * @return string
+     */
+    public static function getPluginDirUrl() {
+        return plugin_dir_url( __FILE__ );
     }
 
     /**

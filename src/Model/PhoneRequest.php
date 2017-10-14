@@ -9,7 +9,10 @@
 /**
  * Class CallMeBack_Model_CallMeBack
  */
-class CallMeBack_Model_Phone {
+class CallMeBack_Model_PhoneRequest {
+    const STATE_DONE = 1;
+    const STATE_NOT_DONE = 0;
+
     /**
      * @var int
      */
@@ -35,6 +38,8 @@ class CallMeBack_Model_Phone {
      * CallMeBack_Model_Phone constructor.
      */
     public function __construct() {
+        $this->done = false;
+        $this->date = new DateTime();
     }
 
     /**
@@ -47,7 +52,7 @@ class CallMeBack_Model_Phone {
     /**
      * @param int $id
      *
-     * @return CallMeBack_Model_Phone
+     * @return CallMeBack_Model_PhoneRequest
      */
     public function setIdCall( $id ) {
         $this->id_call = $id;
@@ -65,7 +70,7 @@ class CallMeBack_Model_Phone {
     /**
      * @param string $phone
      *
-     * @return CallMeBack_Model_Phone
+     * @return CallMeBack_Model_PhoneRequest
      */
     public function setPhoneNumber( $phone ) {
         $this->phone_number = $phone;
@@ -83,7 +88,7 @@ class CallMeBack_Model_Phone {
     /**
      * @param string $name
      *
-     * @return CallMeBack_Model_Phone
+     * @return CallMeBack_Model_PhoneRequest
      */
     public function setName( $name ) {
         $this->name = $name;
@@ -101,7 +106,7 @@ class CallMeBack_Model_Phone {
     /**
      * @param bool $done
      *
-     * @return CallMeBack_Model_Phone
+     * @return CallMeBack_Model_PhoneRequest
      */
     public function setDone( $done ) {
         $this->done = $done;
@@ -119,7 +124,7 @@ class CallMeBack_Model_Phone {
     /**
      * @param DateTime $date
      *
-     * @return CallMeBack_Model_Phone
+     * @return CallMeBack_Model_PhoneRequest
      */
     public function setDate( $date ) {
         $this->date = $date;
@@ -127,5 +132,19 @@ class CallMeBack_Model_Phone {
         return $this;
     }
 
+    /**
+     * Retourne la représentation de l'entité sous forme de tableau
+     *
+     * @return array
+     */
+    public function toArray() {
+        return [
+            'id_call' => $this->getIdCall(),
+            'name' => $this->getName(),
+            'phone_number' => $this->getPhoneNumber(),
+            'done' => $this->isDone(),
+            'date' => $this->getDate()
+        ];
+    }
 
 }

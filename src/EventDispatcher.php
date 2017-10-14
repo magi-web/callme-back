@@ -37,23 +37,45 @@ class CallMeBack_EventDispatcher {
         register_uninstall_hook( __FILE__, array( $setup, 'uninstall_removedata' ) );
 
         if(is_admin()) {
-            new CallMeBack_Controller_AdminController();
+            add_action('admin_menu', array($this, 'callmeback_plugin_setup_menu'));
+            add_action( 'admin_init', array( CallMeBack_Block_Admin_Settings::class, 'registerOptions' ) );
         } else {
+            //TODO utiliser une classe dédiée pour les routes et les shortcodes
             $controller = new CallMeBack_Controller_DefaultController();
             $this->controllers['default'] = $controller;
-            add_shortcode( 'callmeback_form', array( $controller, 'onFormRenderAction' ) );
+            add_shortcode( 'callmeback_form', array( $controller, 'phoneRequestAction' ) );
 
-            add_action( 'parse_request', array($this, 'parse_request'), 20 );
+            add_action( 'rest_api_init', function() {
+                $restController = new CallMeBack_Controller_RestController();
+                $restController->register_routes();
+            });
         }
     }
-    /**
-     * Intercepte les éléments posts si le formulaire a été soumis pour délencher les actions adéquates
-     */
-    public function parse_request() {
-        if ( isset( $_POST[CallMeBack_Form_PhoneForm::FORM_PREFIX] ) ) {
-            $this->controllers['default']->onPhoneSubmitAction($_POST[CallMeBack_Form_PhoneForm::FORM_PREFIX]);
-            exit;
-        }
+
+    function callmeback_plugin_setup_menu(){
+        $adminController = new CallMeBack_Controller_AdminController();
+        add_filter( 'set-screen-option', [ CallMeBack_Block_Admin_PhoneRequestList::class, 'set_screen' ], 10, 3 );
+
+        add_menu_page( 'Call Me Back', 'Call Me Back', 'manage_options', 'callme-back',  array ($adminController, 'indexAction'), 'dashicons-phone' );
+
+        $hook = add_submenu_page(
+            'callme-back',
+            __('Plugin', CallMeBack::TEXT_DOMAIN),
+            __('Plugin', CallMeBack::TEXT_DOMAIN),
+            'manage_options',
+            'callme-back',
+            array ($adminController, 'indexAction')
+        );
+        add_action( "load-$hook", [ CallMeBack_Block_Admin_PhoneRequestList::class, 'screen_option' ] );
+
+        add_submenu_page(
+            'callme-back',
+            __('Call Me Back Settings', CallMeBack::TEXT_DOMAIN),
+            __('Settings', CallMeBack::TEXT_DOMAIN),
+            'manage_options',
+            'callme-back-settings',
+            array ($adminController, 'settingsAction')
+        );
     }
 
     /**

@@ -10,6 +10,8 @@
  * Class CallMeBack_Model_Setup
  */
 class CallMeBack_Model_Setup {
+    const TABLE_NAME = 'CallMeBack';
+
     private $tableSQL = '';
     private $table_name = '';
     private $pluginName = '';
@@ -19,7 +21,7 @@ class CallMeBack_Model_Setup {
      */
     public function __construct() {
         global $wpdb;
-        $this->table_name = $wpdb->prefix . 'CallMeBack';
+        $this->table_name = $wpdb->prefix . static::TABLE_NAME;
     }
 
     public function install_data() {
