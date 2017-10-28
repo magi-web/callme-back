@@ -13,19 +13,28 @@
  */
 class CallMeBack_Repository_PhoneRequestRepository {
     /**
+     * Retourne l'objet wordpress db pour intéragir simplement avec la db
+     *
+     * @return wpdb
+     */
+    private function wpdb() {
+        return $GLOBALS['wpdb'];
+    }
+    /**
      * Retourne la totalité des entrées en base pour les demandes de rappel
      *
      * @return array
      */
     public function findAll() {
-        global $wpdb;
+        $wpdb = $this->wpdb();
+
         // SELECT id_call, name, phone_number, done, date
         $table            = $this->getModelTable();
         $rawPhoneRequests = $wpdb->get_results( "SELECT id_call, name, phone_number, done, date FROM $table ORDER BY id_call DESC LIMIT 0,4" );
 
         $phoneRequests = [];
         foreach ( $rawPhoneRequests as $rawPhoneRequest ) {
-            $phoneRequests[] = $this->createFromRawData($rawPhoneRequest);
+            $phoneRequests[] = $this->createFromRawData( $rawPhoneRequest );
         }
 
         return $phoneRequests;
@@ -37,7 +46,7 @@ class CallMeBack_Repository_PhoneRequestRepository {
      * @return string
      */
     private function getModelTable() {
-        global $wpdb;
+        $wpdb = $this->wpdb();
 
         return $wpdb->prefix . CallMeBack_Model_Setup::TABLE_NAME;
     }
@@ -49,7 +58,7 @@ class CallMeBack_Repository_PhoneRequestRepository {
      *
      * @return CallMeBack_Model_PhoneRequest
      */
-    private function createFromRawData($rawPhoneRequest) {
+    private function createFromRawData( $rawPhoneRequest ) {
         $phoneRequest = new CallMeBack_Model_PhoneRequest();
         $this->hydrateRawData( $phoneRequest, $rawPhoneRequest );
 
@@ -86,24 +95,7 @@ class CallMeBack_Repository_PhoneRequestRepository {
      * @return array
      */
     public function get_items( $per_page = 5, $page_number = 1, $orderby, $order ) {
-        return $this->search([], $per_page, $page_number, $orderby, $order, 'ARRAY_A' );
-    }
-
-    /**
-     * Retourne les items liés à un état
-     *
-     * @param int $state
-     *
-     * @return array
-     */
-    public function findItemsByState($state, $per_page = 10, $page_number = 1) {
-        list($count, $results) = $this->search([['done', '=', $state]], $per_page, $page_number, 'date', 'desc');
-        $data = [];
-        foreach ($results as $result) {
-            $data []= $this->createFromRawData($result);
-        }
-
-        return [$count, $data];
+        return $this->search( [], $per_page, $page_number, $orderby, $order, 'ARRAY_A' );
     }
 
     /**
@@ -118,7 +110,7 @@ class CallMeBack_Repository_PhoneRequestRepository {
      * @return array|null|object
      */
     private function search( $filters = [], $per_page = 5, $page_number = 1, $orderby, $order, $hydrate = OBJECT ) {
-        global $wpdb;
+        $wpdb = $this->wpdb();
 
         $table = $this->getModelTable();
 
@@ -143,9 +135,32 @@ class CallMeBack_Repository_PhoneRequestRepository {
 
         $result = $wpdb->get_results( $sql, $hydrate );
 
-        $countNb = $wpdb->get_var(str_replace('SELECT *', 'SELECT COUNT(*)', $sql));
+        $countNb = $wpdb->get_var( str_replace( 'SELECT *', 'SELECT COUNT(*)', $sql ) );
 
-        return [intval($countNb), $result];
+        return [ intval( $countNb ), $result ];
+    }
+
+    /**
+     * Retourne les items liés à un état
+     *
+     * @param int $state
+     *
+     * @return array
+     */
+    public function findItemsByState( $state, $per_page = 10, $page_number = 1 ) {
+        list( $count, $results ) = $this->search( [
+            [
+                'done',
+                '=',
+                $state
+            ]
+        ], $per_page, $page_number, 'date', 'desc' );
+        $data = [];
+        foreach ( $results as $result ) {
+            $data [] = $this->createFromRawData( $result );
+        }
+
+        return [ $count, $data ];
     }
 
     /**
@@ -154,7 +169,7 @@ class CallMeBack_Repository_PhoneRequestRepository {
      * @param int $id ID
      */
     public function delete( $id ) {
-        global $wpdb;
+        $wpdb = $this->wpdb();
 
         $wpdb->delete(
             $wpdb->prefix . CallMeBack_Model_Setup::TABLE_NAME,
@@ -170,7 +185,7 @@ class CallMeBack_Repository_PhoneRequestRepository {
      * @param int $state the new State (optional - will toggle by default)
      */
     public function toggle( $id, $state = null ) {
-        global $wpdb;
+        $wpdb = $this->wpdb();
 
         $phoneRequest = $this->find( $id );
         if ( $phoneRequest ) {
@@ -193,15 +208,15 @@ class CallMeBack_Repository_PhoneRequestRepository {
      * @return CallMeBack_Model_PhoneRequest|null
      */
     public function find( $idCall ) {
-        global $wpdb;
+        $wpdb = $this->wpdb();
 
         $phoneRequest = null;
 
         $table           = $this->getModelTable();
-        $sql             = sprintf( "SELECT id_call, name, phone_number, done, date FROM %s WHERE id_call = %d LIMIT 0,1", $table, $idCall );
+        $sql             = sprintf( 'SELECT id_call, name, phone_number, done, date FROM %s WHERE id_call = %d LIMIT 0,1', $table, $idCall );
         $rawPhoneRequest = $wpdb->get_row( $sql );
         if ( ! empty( $rawPhoneRequest ) ) {
-            $phoneRequest = $this->createFromRawData($rawPhoneRequest);
+            $phoneRequest = $this->createFromRawData( $rawPhoneRequest );
         }
 
         return $phoneRequest;
@@ -214,7 +229,7 @@ class CallMeBack_Repository_PhoneRequestRepository {
      * @param int $state the new State
      */
     public function bulkToggle( $ids, $state ) {
-        global $wpdb;
+        $wpdb = $this->wpdb();
 
         $newState = intval( $state );
         $sql      = "UPDATE " . $wpdb->prefix . CallMeBack_Model_Setup::TABLE_NAME . ' SET done=%d WHERE id_call IN (%s)';
@@ -228,7 +243,7 @@ class CallMeBack_Repository_PhoneRequestRepository {
      * @return null|string
      */
     public function record_count() {
-        global $wpdb;
+        $wpdb = $this->wpdb();
 
         $table = $wpdb->prefix . CallMeBack_Model_Setup::TABLE_NAME;
 
@@ -243,7 +258,7 @@ class CallMeBack_Repository_PhoneRequestRepository {
      * @param CallMeBack_Model_PhoneRequest $entity
      */
     public function save( CallMeBack_Model_PhoneRequest $entity ) {
-        global $wpdb;
+        $wpdb = $this->wpdb();
         $table = $this->getModelTable();
 
         if ( empty( $entity->getIdCall() ) ) {
