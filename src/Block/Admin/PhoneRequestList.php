@@ -35,7 +35,7 @@ class CallMeBack_Block_Admin_PhoneRequestList extends WP_List_Table {
      *
      * @return string
      */
-    function column_name( $item ) {
+    public function column_name( $item ) {
 
         // create a nonce
         $delete_nonce = wp_create_nonce( 'callmeback_delete_item' );
@@ -58,7 +58,7 @@ class CallMeBack_Block_Admin_PhoneRequestList extends WP_List_Table {
      *
      * @return string
      */
-    function column_done( $item ) {
+    public function column_done( $item ) {
 
         // create a nonce
         $toggle_nonce = wp_create_nonce( 'callmeback_toggle_item' );
@@ -101,7 +101,7 @@ class CallMeBack_Block_Admin_PhoneRequestList extends WP_List_Table {
      *
      * @return string
      */
-    function column_cb( $item ) {
+    protected function column_cb( $item ) {
         return sprintf(
             '<input type="checkbox" name="bulk-items[]" value="%s" />', $item['id_call']
         );
@@ -112,7 +112,7 @@ class CallMeBack_Block_Admin_PhoneRequestList extends WP_List_Table {
      *
      * @return array
      */
-    function get_columns() {
+    public function get_columns() {
         $columns = [
             'cb'           => '<input type="checkbox" />',
             'name'         => __( 'Name', CallMeBack::TEXT_DOMAIN ),
@@ -174,7 +174,7 @@ class CallMeBack_Block_Admin_PhoneRequestList extends WP_List_Table {
      * Handles data query and filter, sorting, and pagination.
      */
     public function prepare_items() {
-        list( $columns, $hidden, $sortable, $primary ) = $this->get_column_info();
+        list( $columns, $hidden, $sortable ) = $this->get_column_info();
         $columns = $this->get_columns();
         $sortable = $this->get_sortable_columns();
         $this->_column_headers = array($columns, $hidden, $sortable);
@@ -188,7 +188,7 @@ class CallMeBack_Block_Admin_PhoneRequestList extends WP_List_Table {
         $per_page     = $this->get_items_per_page( 'items_per_page', 5 );
         $current_page = $this->get_pagenum();
 
-        list($total_items, $this->items) = $phoneRepository->get_items( $per_page, $current_page, $_REQUEST['orderby'], $_REQUEST['order'] );
+        list($total_items, $this->items) = $phoneRepository->getItems( $per_page, $current_page, $_REQUEST['orderby'], $_REQUEST['order'] );
 
         $this->set_pagination_args( [
             'total_items' => $total_items, //WE have to calculate the total number of items
@@ -222,43 +222,49 @@ class CallMeBack_Block_Admin_PhoneRequestList extends WP_List_Table {
         echo '</tr>';
     }
 
+    /**
+     * Checks nonce in request for the given action
+     *
+     * @param string $action
+     *
+     * @return bool
+     * @throws Exception
+     */
+    private function checkNonceFromRequest($action = '') {
+        // In our file that handles the request, verify the nonce.
+        $nonce = esc_attr( $_REQUEST['_wpnonce'] );
+
+        if ( ! wp_verify_nonce( $nonce, $action ) ) {
+            throw new Exception("Nonce could not be verified");
+        }
+
+        return true;
+    }
+
+    private function redirectAfterActionDone() {
+        wp_redirect( esc_url( add_query_arg() ) );
+        exit;
+    }
+
     public function process_bulk_action() {
         $phoneRepository = new CallMeBack_Repository_PhoneRequestRepository();
 
         //Detect when a bulk action is being triggered...
         if ( 'delete' === $this->current_action() ) {
-
-            // In our file that handles the request, verify the nonce.
-            $nonce = esc_attr( $_REQUEST['_wpnonce'] );
-
-            if ( ! wp_verify_nonce( $nonce, 'callmeback_delete_item' ) ) {
-                die( 'Go get a life script kiddies' );
-            }
-            else {
+            if($this->checkNonceFromRequest('callmeback_delete_item')) {
                 $phoneRepository->delete( absint( $_GET['id_call'] ) );
 
-                wp_redirect( esc_url( add_query_arg() ) );
-                exit;
+                $this->redirectAfterActionDone();
             }
-
         }
 
         //Detect when a bulk action is being triggered...
         if ( 'toggle' === $this->current_action() ) {
-
-            // In our file that handles the request, verify the nonce.
-            $nonce = esc_attr( $_REQUEST['_wpnonce'] );
-
-            if ( ! wp_verify_nonce( $nonce, 'callmeback_toggle_item' ) ) {
-                die( 'Go get a life script kiddies' );
-            }
-            else {
+            if($this->checkNonceFromRequest('callmeback_toggle_item')) {
                 $phoneRepository->toggle( absint( $_GET['id_call'] ) );
 
-                wp_redirect( esc_url( add_query_arg() ) );
-                exit;
+                $this->redirectAfterActionDone();
             }
-
         }
 
         // If the delete bulk action is triggered
@@ -274,8 +280,7 @@ class CallMeBack_Block_Admin_PhoneRequestList extends WP_List_Table {
 
             }
 
-            wp_redirect( esc_url( add_query_arg() ) );
-            exit;
+            $this->redirectAfterActionDone();
         }
 
         // If the delete bulk action is triggered
@@ -293,8 +298,7 @@ class CallMeBack_Block_Admin_PhoneRequestList extends WP_List_Table {
 
                 $phoneRepository->bulkToggle($item_ids, $newState);
 
-                wp_redirect( esc_url( add_query_arg() ) );
-                exit;
+                $this->redirectAfterActionDone();
             }
         }
     }

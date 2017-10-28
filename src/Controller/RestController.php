@@ -13,7 +13,7 @@ class CallMeBack_Controller_RestController extends WP_REST_Controller {
     /**
      * Register the routes for the objects of the controller.
      */
-    public function register_routes() {
+    public function registerRoutes() {
         $version = '1';
         $namespace = 'callme-back/v' . $version;
         $base = 'route';
@@ -103,7 +103,6 @@ class CallMeBack_Controller_RestController extends WP_REST_Controller {
      */
     public function get_items_permissions_check( $request ) {
         return true;// <--use to make readable by all
-        //return current_user_can( 'edit_something' );
     }
 
     /**

@@ -13,11 +13,10 @@ class CallMeBack_Form_FormFactory {
     /**
      * @param string $formClass
      * @param mixed $entity
-     * @param array $options
      *
      * @return CallMeBack_Form_AbstractForm
      */
-    public function createForm( $formClass, $entity = null, $options = [] ) {
+    public function createForm( $formClass, $entity = null ) {
         /** @var CallMeBack_Form_AbstractForm $formInstance */
         $formInstance = new $formClass();
         $formInstance->buildForm();

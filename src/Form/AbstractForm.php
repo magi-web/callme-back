@@ -157,25 +157,21 @@ abstract class CallMeBack_Form_AbstractForm {
      * Retourne l'élément label du champs associé
      *
      * @param string $fieldName
-     *
-     * @return string
      */
-    public function form_label( $fieldName ) {
+    public function renderLabel( $fieldName ) {
         $fieldEntry = $this->formFields[ $fieldName ];
 
         $id    = $this->getFieldId( $fieldName );
         $label = __( $fieldEntry['label'], CallMeBack::TEXT_DOMAIN );
 
-        return "<label for='$id'><span class=\"screen-reader-text\">$label</span></label>";
+        echo "<label for='$id'><span class=\"screen-reader-text\">$label</span></label>";
     }
 
     /**
      * Retourne la liste des erreurs liées au champs associé
      * @param $fieldName
-     *
-     * @return string
      */
-    public function form_errors($fieldName) {
+    public function renderErrors($fieldName) {
         $errorsTpl = "";
         if(!empty($this->errors[$fieldName])) {
             $errorsTpl .= "<ul class='errors'>";
@@ -185,7 +181,7 @@ abstract class CallMeBack_Form_AbstractForm {
             $errorsTpl .= "</ul>";
         }
 
-        return $errorsTpl;
+        echo $errorsTpl;
     }
 
     /**
@@ -203,10 +199,8 @@ abstract class CallMeBack_Form_AbstractForm {
      * Retourne l'élément input du champs associé
      *
      * @param string $fieldName
-     *
-     * @return string
      */
-    public function form_widget( $fieldName ) {
+    public function renderWidget( $fieldName ) {
         $fieldEntry = $this->formFields[ $fieldName ];
 
         $attrs = array_merge(
@@ -231,7 +225,7 @@ abstract class CallMeBack_Form_AbstractForm {
 
         $widget = "<input $attrs />";
 
-        return $widget;
+        echo $widget;
     }
 
     /**

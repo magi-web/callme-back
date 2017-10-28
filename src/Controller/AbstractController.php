@@ -11,18 +11,13 @@ class CallMeBack_Controller_AbstractController {
     protected $view = null;
     protected $vars = array();
     private $themedir = false;
-    private $template_file = '';                              // object to hold varaibles for the template
+    private $template_file = '';                              // object to hold variables for the template
 
     /**
      * CallMeBack_Controller_AbstractController constructor.
      */
     public function __construct() {
-        global $blog_id, $wp, $wpdb, $wp_query;
-
-        $this->blog_id  = $blog_id;
-        $this->wp       = &$wp;
-        $this->wpdb     = &$wpdb;
-        $this->wp_query = &$wp_query;
+        $this->wp_query = $GLOBALS['wp_query'];
 
         $this->json = (object) array();
         $this->vars = (object) array();
@@ -40,7 +35,6 @@ class CallMeBack_Controller_AbstractController {
      */
     public function setTheme( $template = null ) {
         if ( ! $template ) {
-            //$template = get_template();
             $template = basename(get_stylesheet_directory());
         }
 

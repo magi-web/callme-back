@@ -15,44 +15,40 @@ class CallMeBack_EventDispatcher {
      */
     private static $instance = false;
 
-    private $controllers = [];
-
     /**
      * CallMeBack_EventDispatcher constructor.
      */
     private function __construct() {
-        if ( is_callable( array( $this, '_init' ) ) ) {
-            $this->_init();
+        if ( is_callable( array( $this, '__init' ) ) ) {
+            $this->__init();
         }
     }
 
     /**
      * Initialization method
      */
-    protected function _init() {
+    protected function __init() {
         $setup = new CallMeBack_Model_Setup();
         //Init et des-init
-        register_activation_hook( __FILE__, array( $setup, 'install_data' ) );
+        register_activation_hook( __FILE__, array( $setup, 'installData' ) );
         register_deactivation_hook( __FILE__, array( $setup, 'deactivate' ) );
-        register_uninstall_hook( __FILE__, array( $setup, 'uninstall_removedata' ) );
+        register_uninstall_hook( __FILE__, array( $setup, 'uninstallRemovedata' ) );
 
         if(is_admin()) {
-            add_action('admin_menu', array($this, 'callmeback_plugin_setup_menu'));
+            add_action('admin_menu', array($this, 'initAdminSetupMenu'));
             add_action( 'admin_init', array( CallMeBack_Block_Admin_Settings::class, 'registerOptions' ) );
         } else {
-            //TODO utiliser une classe dédiée pour les routes et les shortcodes
             $controller = new CallMeBack_Controller_DefaultController();
-            $this->controllers['default'] = $controller;
             add_shortcode( 'callmeback_form', array( $controller, 'phoneRequestAction' ) );
 
             add_action( 'rest_api_init', function() {
                 $restController = new CallMeBack_Controller_RestController();
-                $restController->register_routes();
+                $restController->registerRoutes();
             });
         }
     }
 
-    function callmeback_plugin_setup_menu(){
+    private function initAdminSetupMenu(){
         $adminController = new CallMeBack_Controller_AdminController();
         add_filter( 'set-screen-option', [ CallMeBack_Block_Admin_PhoneRequestList::class, 'set_screen' ], 10, 3 );
 

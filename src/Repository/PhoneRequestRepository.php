@@ -68,12 +68,12 @@ class CallMeBack_Repository_PhoneRequestRepository {
     /**
      * Affecte les données à l'entité
      *
-     * @param object $entity
+     * @param CallMeBack_Model_PhoneRequest $entity
      * @param array $rawData
      *
      * @throws CallMeBack_Repository_Exception
      */
-    private function hydrateRawData( $entity, $rawData ) {
+    private function hydrateRawData( CallMeBack_Model_PhoneRequest $entity, $rawData ) {
         if ( ! empty( $entity ) ) {
             foreach ( $rawData as $column => $value ) {
                 $setter = 'set' . ucfirst( CallMeBack_Utils_StringUtils::toCamelCase( $column ) );
@@ -94,7 +94,7 @@ class CallMeBack_Repository_PhoneRequestRepository {
      *
      * @return array
      */
-    public function get_items( $per_page = 5, $page_number = 1, $orderby, $order ) {
+    public function getItems( $per_page = 5, $page_number = 1, $orderby, $order ) {
         return $this->search( [], $per_page, $page_number, $orderby, $order, 'ARRAY_A' );
     }
 
@@ -118,15 +118,19 @@ class CallMeBack_Repository_PhoneRequestRepository {
 
         if ( ! empty( $filters ) ) {
             $sql .= " WHERE (";
-            $sql .= join( ") AND (", array_map( function ( $item ) {
-                return esc_sql( join( " ", $item ) );
-            }, $filters ) );
+            $conditions = [];
+            foreach ($filters as $filter) {
+                $conditions[] = esc_sql( join( " ", $filter ) );
+            }
+            $sql .= join( ") AND (", $conditions );
             $sql .= ") ";
         }
 
         if ( ! empty( $orderby ) ) {
-            $sql .= ' ORDER BY ' . esc_sql( $orderby );
-            $sql .= ! empty( $order ) ? ' ' . esc_sql( $order ) : ' ASC';
+            $sql .= sprintf( ' ORDER BY %s %s',
+                esc_sql( $orderby ),
+                ( ! empty( $order ) ? esc_sql( $order ) : 'ASC' )
+            );
         }
 
         $sql .= " LIMIT $per_page";
@@ -232,7 +236,7 @@ class CallMeBack_Repository_PhoneRequestRepository {
         $wpdb = $this->wpdb();
 
         $newState = intval( $state );
-        $sql      = "UPDATE " . $wpdb->prefix . CallMeBack_Model_Setup::TABLE_NAME . ' SET done=%d WHERE id_call IN (%s)';
+        $sql      = "UPDATE " . CallMeBack_Model_Setup::getTableName() . ' SET done=%d WHERE id_call IN (%s)';
         $sql      = sprintf( $sql, $newState, join( ',', $ids ) );
         $wpdb->query( esc_sql( $sql ) );
     }
@@ -242,7 +246,7 @@ class CallMeBack_Repository_PhoneRequestRepository {
      *
      * @return null|string
      */
-    public function record_count() {
+    public function recordCount() {
         $wpdb = $this->wpdb();
 
         $table = $wpdb->prefix . CallMeBack_Model_Setup::TABLE_NAME;

@@ -14,14 +14,13 @@ class CallMeBack_Model_Setup {
 
     private $tableSQL = '';
     private $table_name = '';
-    private $pluginName = '';
 
     /**
      * Retourne l'objet wordpress db pour intéragir simplement avec la db
      *
      * @return wpdb
      */
-    private function wpdb() {
+    private static function wpdb() {
         return $GLOBALS['wpdb'];
     }
 
@@ -33,11 +32,20 @@ class CallMeBack_Model_Setup {
         $this->table_name = $wpdb->prefix . static::TABLE_NAME;
     }
 
-    public function install_data() {
+    /**
+     * Retourne le nom de la table utilisée par le plugin
+     *
+     * @return string
+     */
+    public static function getTableName() {
+        $wpdb = static::wpdb();
+        return $wpdb->prefix . static::TABLE_NAME;
+    }
+
+    public function installData() {
         $wpdb = $this->wpdb();
 
         // Configuration
-        $this->pluginName = 'CallMe back';
         $this->tableSQL   = "id_call mediumint(9) NOT NULL AUTO_INCREMENT, name TEXT DEFAULT '', phone_number TEXT DEFAULT '', done tinyint(1), date DATETIME DEFAULT '0000-00-00 00:00:00', UNIQUE KEY id_call (id_call)";
         $this->path       = __FILE__;
 
@@ -54,7 +62,7 @@ class CallMeBack_Model_Setup {
         //Nothing to do
     }
 
-    public function uninstall_removedata() {
+    public function uninstallRemovedata() {
         $wpdb = $this->wpdb();
 
         $wpdb->query( "DROP TABLE " . $this->table_name );
