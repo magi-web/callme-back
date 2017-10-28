@@ -16,12 +16,12 @@ class CallMeBack_Controller_RestController extends WP_REST_Controller {
     public function registerRoutes() {
         $version = '1';
         $namespace = 'callme-back/v' . $version;
-        $base = 'route';
-        register_rest_route( $namespace, '/' . $base, array(
+        $base = 'call';
+        register_rest_route( $namespace, '/' . $base . '/list', array(
             array(
                 'methods'             => WP_REST_Server::READABLE,
-                'callback'            => array( $this, 'get_items' ),
-                'permission_callback' => array( $this, 'get_items_permissions_check' ),
+                'callback'            => array( $this, 'getItems' ),
+                'permission_callback' => array( $this, 'getPermissionsCheck' ),
                 'args'                => array(
                     'state'    => array(
                         'default' => CallMeBack_Model_PhoneRequest::STATE_NOT_DONE,
@@ -33,45 +33,28 @@ class CallMeBack_Controller_RestController extends WP_REST_Controller {
                         'default' => 1
                     )
                 ),
-            ),
-            array(
-                'methods'         => WP_REST_Server::CREATABLE,
-                'callback'        => array( $this, 'create_item' ),
-                'permission_callback' => array( $this, 'create_item_permissions_check' ),
-                'args'            => $this->get_endpoint_args_for_item_schema( true ),
-            ),
+            )
         ) );
-        register_rest_route( $namespace, '/' . $base . '/call/(?P<id_call>[\d]+)', array(
-            array(
-                'methods'         => WP_REST_Server::READABLE,
-                'callback'        => array( $this, 'get_item' ),
-                'permission_callback' => array( $this, 'get_item_permissions_check' ),
-                'args'            => array(
-                    'context'          => array(
-                        'default'      => 'view',
-                    ),
-                ),
-            ),
+        register_rest_route( $namespace, '/' . $base . '/(?P<id_call>[\d]+)', array(
             array(
                 'methods'         => WP_REST_Server::EDITABLE,
-                'callback'        => array( $this, 'update_item' ),
-                'permission_callback' => array( $this, 'update_item_permissions_check' ),
-                'args'            => $this->get_endpoint_args_for_item_schema( false ),
+                'callback'        => array( $this, 'updateStateItem' ),
+                'permission_callback' => array( $this, 'getPermissionsCheck' ),
+                'args'                => array(
+                    'state'    => array(
+                        'default' => CallMeBack_Model_PhoneRequest::STATE_DONE,
+                    )
+                )
             ),
             array(
                 'methods'  => WP_REST_Server::DELETABLE,
-                'callback' => array( $this, 'delete_item' ),
-                'permission_callback' => array( $this, 'delete_item_permissions_check' ),
-                'args'     => array(
-                    'force'    => array(
-                        'default'      => false,
-                    ),
-                ),
+                'callback' => array( $this, 'deleteItem' ),
+                'permission_callback' => array( $this, 'getPermissionsCheck' ),
             ),
         ) );
         register_rest_route( $namespace, '/' . $base . '/schema', array(
             'methods'         => WP_REST_Server::READABLE,
-            'callback'        => array( $this, 'get_public_item_schema' ),
+            'callback'        => array( $this, 'getPublicItemSchema' ),
         ) );
     }
 
@@ -81,79 +64,70 @@ class CallMeBack_Controller_RestController extends WP_REST_Controller {
      * @param WP_REST_Request $request Full data about the request.
      * @return WP_Error|WP_REST_Response
      */
-    public function get_items( $request ) {
+    public function getItems( $request ) {
         $params = $request->get_params();
         $phoneRequestRepository = new CallMeBack_Repository_PhoneRequestRepository();
-        list($count, $items) = $phoneRequestRepository->findItemsByState($params['state'],$params['per_page'],$params['page'] );
+        list($count, $items) = $phoneRequestRepository->listItems($params['per_page'],$params['page'] );
 
         $data = array('total' => $count, 'per_page' => $params['per_page'], 'page' => $params['page'], 'last_page' => (round($count/$params['per_page']) +1), 'results' => []);
         foreach( $items as $item ) {
-            $itemdata = $this->prepare_item_for_response( $item, $request );
-            $data['results'][] = $this->prepare_response_for_collection( $itemdata );
+            $itemdata = $this->prepareItemForResponse( $item, $request );
+            $data['results'][] = $this->prepareResponseForCollection( $itemdata );
         }
 
         return new WP_REST_Response( $data, 200 );
     }
 
     /**
-     * Check if a given request has access to get items
+     * Check if a given request has access to the rest controller
      *
      * @param WP_REST_Request $request Full data about the request.
      * @return WP_Error|bool
      */
-    public function get_items_permissions_check( $request ) {
+    public function getPermissionsCheck( $request ) {
         return true;// <--use to make readable by all
     }
 
     /**
-     * Check if a given request has access to get a specific item
+     * Mets à jour l'état d'un objet
      *
      * @param WP_REST_Request $request Full data about the request.
-     * @return WP_Error|bool
+     * @return WP_Error|WP_REST_Response
      */
-    public function get_item_permissions_check( $request ) {
-        return $this->get_items_permissions_check( $request );
+    public function updateStateItem( $request ) {
+        $params = $request->get_params();
+        $phoneRequestRepository = new CallMeBack_Repository_PhoneRequestRepository();
+        $phoneRequest = $phoneRequestRepository->find($params['id_call']);
+
+        $data = ['success' => false];
+        if($phoneRequest) {
+            $phoneRequest->setDone(intval($params['done']));
+            $phoneRequestRepository->save($phoneRequest);
+            $data['success'] = true;
+        } else {
+            $data['error'] = sprintf(__('Entity for the id %d was not found.', CallMeBack::TEXT_DOMAIN), $params['id_call']);
+        }
+
+        return new WP_REST_Response( $data, 200 );
     }
 
     /**
-     * Check if a given request has access to create items
+     * Supprime un objet
      *
      * @param WP_REST_Request $request Full data about the request.
-     * @return WP_Error|bool
+     * @return WP_Error|WP_REST_Response
      */
-    public function create_item_permissions_check( $request ) {
-        return current_user_can( 'edit_something' );
+    public function deleteItem( $request ) {
+        $params = $request->get_params();
+
+        $phoneRequestRepository = new CallMeBack_Repository_PhoneRequestRepository();
+        $phoneRequestRepository->delete($params['id_call']);
+
+        $data = ['success' => true];
+
+        return new WP_REST_Response( $data, 200 );
     }
 
-    /**
-     * Check if a given request has access to update a specific item
-     *
-     * @param WP_REST_Request $request Full data about the request.
-     * @return WP_Error|bool
-     */
-    public function update_item_permissions_check( $request ) {
-        return $this->create_item_permissions_check( $request );
-    }
-
-    /**
-     * Check if a given request has access to delete a specific item
-     *
-     * @param WP_REST_Request $request Full data about the request.
-     * @return WP_Error|bool
-     */
-    public function delete_item_permissions_check( $request ) {
-        return $this->create_item_permissions_check( $request );
-    }
-
-    /**
-     * Prepare the item for create or update operation
-     *
-     * @param WP_REST_Request $request Request object
-     * @return WP_Error|object $prepared_item
-     */
-    protected function prepare_item_for_database( $request ) {
-        return array();
-    }
 
     /**
      * Prepare the item for the REST response
@@ -162,35 +136,94 @@ class CallMeBack_Controller_RestController extends WP_REST_Controller {
      * @param WP_REST_Request $request Request object.
      * @return mixed
      */
-    public function prepare_item_for_response( $item, $request ) {
+    public function prepareItemForResponse( $item, $request ) {
         // Wrap the data in a response object.
         return rest_ensure_response( $item->toArray() );
     }
 
     /**
-     * Get the query params for collections
+     * Prepares a response for insertion into a collection.
+     *
+     * @since 4.7.0
+     * @access public
+     *
+     * @param WP_REST_Response $response Response object.
+     * @return array|mixed Response data, ready for insertion into collection data.
+     */
+    public function prepareResponseForCollection($response) {
+        return $this->prepare_response_for_collection($response);
+    }
+
+    /**
+     * Retrieves the item's schema for display / public consumption purposes.
+     *
+     * @since 4.7.0
+     * @access public
+     *
+     * @return array Public item schema data.
+     */
+    public function getPublicItemSchema() {
+
+        $schema = $this->getItemSchema();
+
+        foreach ( $schema['properties'] as &$property ) {
+            unset( $property['arg_options'] );
+        }
+
+        return $schema;
+    }
+
+    /**
+     * Retrieves the comment's schema, conforming to JSON Schema.
+     *
+     * @since 4.7.0
+     * @access public
      *
      * @return array
      */
-    public function get_collection_params() {
-        return array(
-            'page'     => array(
-                'description'        => 'Current page of the collection.',
-                'type'               => 'integer',
-                'default'            => 1,
-                'sanitize_callback'  => 'absint',
-            ),
-            'per_page' => array(
-                'description'        => 'Maximum number of items to be returned in result set.',
-                'type'               => 'integer',
-                'default'            => 10,
-                'sanitize_callback'  => 'absint',
-            ),
-            'search'   => array(
-                'description'        => 'Limit results to those matching a string.',
-                'type'               => 'string',
-                'sanitize_callback'  => 'sanitize_text_field',
+    public function getItemSchema() {
+        $schema = array(
+            '$schema'              => 'http://json-schema.org/schema#',
+            'title'                => 'comment',
+            'type'                 => 'object',
+            'properties'           => array(
+                'id_call'               => array(
+                    'description'  => __( 'Unique identifier for the object.' ),
+                    'type'         => 'integer',
+                    'context'      => array( 'view', 'edit', 'embed' ),
+                    'readonly'     => true,
+                ),
+                'name'           => array(
+                    'description'  => __( 'Display name for the object.' ),
+                    'type'         => 'string',
+                    'context'      => array( 'view', 'edit', 'embed' ),
+                    'arg_options'  => array(
+                        'sanitize_callback' => 'sanitize_text_field',
+                    )
+                ),
+                'phone_number'     => array(
+                    'description'  => __( 'Phone number for the object.' ),
+                    'type'         => 'string',
+                    'format'       => 'phone',
+                    'context'      => array( 'edit' )
+                ),
+                'done'           => array(
+                    'description'  => __( 'State of the object.' ),
+                    'type'         => 'string',
+                    'context'      => array( 'view', 'edit' ),
+                    'arg_options'  => array(
+                        'sanitize_callback' => 'sanitize_key',
+                    ),
+                ),
+                'date'             => array(
+                    'description'  => __( "The date the object was published, in the site's timezone." ),
+                    'type'         => 'string',
+                    'format'       => 'date-time',
+                    'context'      => array( 'view', 'edit', 'embed' ),
+                )
             ),
         );
+
+        return $this->add_additional_fields_schema( $schema );
     }
 }

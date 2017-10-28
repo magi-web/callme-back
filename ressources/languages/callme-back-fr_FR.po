@@ -163,3 +163,6 @@ msgstr "Réglages de l'extension"
 
 msgid "Plugin"
 msgstr "Extension"
+
+msgid "Entity for the id %d was not found."
+msgstr "L'objet ayant l'id %d n' a pas été trouvé."

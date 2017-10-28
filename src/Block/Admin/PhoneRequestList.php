@@ -6,14 +6,10 @@
  * Time: 21:22
  */
 
-if ( ! class_exists( 'WP_List_Table' ) ) {
-    require_once( ABSPATH . 'wp-admin/includes/class-wp-list-table.php' );
-}
-
 /**
  * Class CallMeBack_Block_Admin_PhoneRequestList
  */
-class CallMeBack_Block_Admin_PhoneRequestList extends WP_List_Table {
+class CallMeBack_Block_Admin_PhoneRequestList extends CallMeBack_Block_Admin_ListTable {
     /** Class constructor */
     public function __construct() {
 
@@ -24,7 +20,7 @@ class CallMeBack_Block_Admin_PhoneRequestList extends WP_List_Table {
         ] );
     }
     /** Text displayed when no customer data is available */
-    public function no_items() {
+    public function noItems() {
         _e( 'No items found.', CallMeBack::TEXT_DOMAIN );
     }
 
@@ -35,7 +31,7 @@ class CallMeBack_Block_Admin_PhoneRequestList extends WP_List_Table {
      *
      * @return string
      */
-    public function column_name( $item ) {
+    public function columnName( $item ) {
 
         // create a nonce
         $delete_nonce = wp_create_nonce( 'callmeback_delete_item' );
@@ -48,7 +44,7 @@ class CallMeBack_Block_Admin_PhoneRequestList extends WP_List_Table {
             'delete' => sprintf( '<a href="?page=%s&action=%s&id_call=%s&_wpnonce=%s">' . $actionLabel . '</a>', esc_attr( $_REQUEST['page'] ), 'delete', absint( $item['id_call'] ), $delete_nonce )
         ];
 
-        return $title . $this->row_actions( $actions );
+        return $title . $this->rowActions( $actions );
     }
 
     /**
@@ -58,7 +54,7 @@ class CallMeBack_Block_Admin_PhoneRequestList extends WP_List_Table {
      *
      * @return string
      */
-    public function column_done( $item ) {
+    public function columnDone( $item ) {
 
         // create a nonce
         $toggle_nonce = wp_create_nonce( 'callmeback_toggle_item' );
@@ -71,7 +67,7 @@ class CallMeBack_Block_Admin_PhoneRequestList extends WP_List_Table {
             'toggle' => sprintf( '<a href="?page=%s&action=%s&id_call=%s&_wpnonce=%s">%s</a>', esc_attr( $_REQUEST['page'] ), 'toggle', absint( $item['id_call'] ), $toggle_nonce, $actionLabel )
         ];
 
-        return $title . $this->row_actions( $actions );
+        return $title . $this->rowActions( $actions );
     }
 
     /**
@@ -82,7 +78,7 @@ class CallMeBack_Block_Admin_PhoneRequestList extends WP_List_Table {
      *
      * @return mixed
      */
-    public function column_default( $item, $column_name ) {
+    public function columnDefault( $item, $column_name ) {
         switch ( $column_name ) {
             case 'phone_number':
                 return $item[ $column_name ];
@@ -101,7 +97,7 @@ class CallMeBack_Block_Admin_PhoneRequestList extends WP_List_Table {
      *
      * @return string
      */
-    protected function column_cb( $item ) {
+    protected function columnCb( $item ) {
         return sprintf(
             '<input type="checkbox" name="bulk-items[]" value="%s" />', $item['id_call']
         );
@@ -112,7 +108,7 @@ class CallMeBack_Block_Admin_PhoneRequestList extends WP_List_Table {
      *
      * @return array
      */
-    public function get_columns() {
+    public function getColumns() {
         $columns = [
             'cb'           => '<input type="checkbox" />',
             'name'         => __( 'Name', CallMeBack::TEXT_DOMAIN ),
@@ -129,7 +125,7 @@ class CallMeBack_Block_Admin_PhoneRequestList extends WP_List_Table {
      *
      * @return array
      */
-    public function get_sortable_columns() {
+    public function getSortableColumns() {
         $sortable_columns = array(
             'name'         => array( 'name', true ),
             'phone_number' => array( 'phone_number', false ),
@@ -145,7 +141,7 @@ class CallMeBack_Block_Admin_PhoneRequestList extends WP_List_Table {
      *
      * @return array
      */
-    public function get_bulk_actions() {
+    public function getBulkActions() {
         $actions = [
             'bulk-delete' => __('Delete'),
             'bulk-toggle-yes' => __('Toggle to Done', CallMeBack::TEXT_DOMAIN),
@@ -158,7 +154,7 @@ class CallMeBack_Block_Admin_PhoneRequestList extends WP_List_Table {
     /**
      * Screen options
      */
-    public static function screen_option() {
+    public static function screenOption() {
 
         $option = 'per_page';
         $args   = [
@@ -173,24 +169,24 @@ class CallMeBack_Block_Admin_PhoneRequestList extends WP_List_Table {
     /**
      * Handles data query and filter, sorting, and pagination.
      */
-    public function prepare_items() {
-        list( $columns, $hidden, $sortable ) = $this->get_column_info();
-        $columns = $this->get_columns();
-        $sortable = $this->get_sortable_columns();
+    public function prepareItems() {
+        list( $columns, $hidden, $sortable ) = $this->getColumnInfo();
+        $columns = $this->getColumns();
+        $sortable = $this->getSortableColumns();
         $this->_column_headers = array($columns, $hidden, $sortable);
 
         /** @var CallMeBack_Repository_PhoneRequestRepository $phoneRepository */
         $phoneRepository = new CallMeBack_Repository_PhoneRequestRepository();
 
         /** Process bulk action */
-        $this->process_bulk_action();
+        $this->processBulkAction();
 
-        $per_page     = $this->get_items_per_page( 'items_per_page', 5 );
-        $current_page = $this->get_pagenum();
+        $per_page     = $this->getItemsPerPage( 'items_per_page', 5 );
+        $current_page = $this->getPagenum();
 
         list($total_items, $this->items) = $phoneRepository->getItems( $per_page, $current_page, $_REQUEST['orderby'], $_REQUEST['order'] );
 
-        $this->set_pagination_args( [
+        $this->setPaginationArgs( [
             'total_items' => $total_items, //WE have to calculate the total number of items
             'per_page'    => $per_page //WE have to determine how many items to show on a page
         ] );
@@ -203,7 +199,7 @@ class CallMeBack_Block_Admin_PhoneRequestList extends WP_List_Table {
      *
      * @return mixed
      */
-    public static function set_screen( $status, $option, $value ) {
+    public static function setScreenOption( $status, $option, $value ) {
         return $value;
     }
 
@@ -215,10 +211,10 @@ class CallMeBack_Block_Admin_PhoneRequestList extends WP_List_Table {
      *
      * @param object $item The current item
      */
-    public function single_row( $item ) {
+    public function singleRow( $item ) {
         $classes = $item['done'] ? 'is-done' : 'is-not-done';
         echo "<tr class='$classes'>";
-        $this->single_row_columns( $item );
+        $this->singleRowColumns( $item );
         echo '</tr>';
     }
 
@@ -246,11 +242,11 @@ class CallMeBack_Block_Admin_PhoneRequestList extends WP_List_Table {
         exit;
     }
 
-    public function process_bulk_action() {
+    public function processBulkAction() {
         $phoneRepository = new CallMeBack_Repository_PhoneRequestRepository();
 
         //Detect when a bulk action is being triggered...
-        if ( 'delete' === $this->current_action() ) {
+        if ( 'delete' === $this->currentAction() ) {
             if($this->checkNonceFromRequest('callmeback_delete_item')) {
                 $phoneRepository->delete( absint( $_GET['id_call'] ) );
 
@@ -259,7 +255,7 @@ class CallMeBack_Block_Admin_PhoneRequestList extends WP_List_Table {
         }
 
         //Detect when a bulk action is being triggered...
-        if ( 'toggle' === $this->current_action() ) {
+        if ( 'toggle' === $this->currentAction() ) {
             if($this->checkNonceFromRequest('callmeback_toggle_item')) {
                 $phoneRepository->toggle( absint( $_GET['id_call'] ) );
 

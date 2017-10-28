@@ -145,6 +145,21 @@ class CallMeBack_Repository_PhoneRequestRepository {
     }
 
     /**
+     * Retourne la liste des items
+     *
+     * @return array
+     */
+    public function listItems( $per_page = 10, $page_number = 1 ) {
+        list( $count, $results ) = $this->search( [], $per_page, $page_number, 'date', 'desc' );
+        $data = [];
+        foreach ( $results as $result ) {
+            $data [] = $this->createFromRawData( $result );
+        }
+
+        return [ $count, $data ];
+    }
+
+    /**
      * Retourne les items liés à un état
      *
      * @param int $state
@@ -273,7 +288,7 @@ class CallMeBack_Repository_PhoneRequestRepository {
                 $entity->isDone(),
                 $entity->getDate()->format( 'Y-m-d H:i:s' ) );
         } else {
-            $sql = $wpdb->prepare( "UPDATE $table SET (name, phone_number, done, date) VALUES ( %s, %s, %d, %s ) WHERE id_call = %d",
+            $sql = $wpdb->prepare( "UPDATE $table SET name=%s, phone_number=%s, done=%s, date=%s WHERE id_call = %d",
                 $entity->getName(),
                 $entity->getPhoneNumber(),
                 $entity->isDone(),

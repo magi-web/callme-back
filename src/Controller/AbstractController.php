@@ -59,6 +59,21 @@ class CallMeBack_Controller_AbstractController {
     }
 
     /**
+     * @param $template
+     *
+     * @return string
+     */
+    private function getAbsoluteTemplateFile($template) {
+        $templateFile = DIRECTORY_SEPARATOR . $template . '.php';
+        if(!is_admin() && file_exists($this->themedir . $templateFile)) {
+            $templateFile = $this->themedir . $templateFile;
+        } else {
+            $templateFile = CallMeBack::getTemplateDir() . $templateFile;
+        }
+        return $templateFile;
+    }
+
+    /**
      * @param null $html
      * @param array $vars
      *
@@ -77,11 +92,9 @@ class CallMeBack_Controller_AbstractController {
                 return false;
             }
         } else if ( $html ) {
-            $baseDir = is_admin() ? CallMeBack::getPluginDir() : $this->themedir;
-            $this->template_file = $baseDir . DIRECTORY_SEPARATOR . $html . '.php';
+            $this->template_file = $this->getAbsoluteTemplateFile($html);
         } else if ( $this->view() ) {
-            $baseDir = is_admin() ? CallMeBack::getPluginDir() : $this->themedir;
-            $this->template_file = $baseDir . '/' . $this->view . '.php';
+            $this->template_file = $this->getAbsoluteTemplateFile($this->view);
         }
 
         if ( ! $this->template_file || ! file_exists( $this->template_file ) ) {

@@ -44,6 +44,17 @@ class CallMeBack {
     }
 
     /**
+     * @return string
+     */
+    public static function getTemplateDir() {
+        $subDir = is_admin() ? 'admin' : 'frontend';
+        return static::getPluginDir()
+               . DIRECTORY_SEPARATOR . 'ressources'
+               . DIRECTORY_SEPARATOR . 'views'
+               . DIRECTORY_SEPARATOR . $subDir . DIRECTORY_SEPARATOR;
+    }
+
+    /**
      * Returns the current plugin directory
      *
      * @return string

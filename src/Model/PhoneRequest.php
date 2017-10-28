@@ -127,7 +127,7 @@ class CallMeBack_Model_PhoneRequest {
      * @return CallMeBack_Model_PhoneRequest
      */
     public function setDate( $date ) {
-        $this->date = $date;
+        $this->date = is_string($date) ? new Datetime($date) : $date;
 
         return $this;
     }

@@ -28,29 +28,31 @@ class CallMeBack_EventDispatcher {
      * Initialization method
      */
     protected function __init() {
-        $setup = new CallMeBack_Model_Setup();
-        //Init et des-init
-        register_activation_hook( __FILE__, array( $setup, 'installData' ) );
-        register_deactivation_hook( __FILE__, array( $setup, 'deactivate' ) );
-        register_uninstall_hook( __FILE__, array( $setup, 'uninstallRemovedata' ) );
+        if ( ! defined( 'CMB_AJAX' ) ) {
+            $setup = new CallMeBack_Model_Setup();
+            //Init et des-init
+            register_activation_hook( __FILE__, array( $setup, 'installData' ) );
+            register_deactivation_hook( __FILE__, array( $setup, 'deactivate' ) );
+            register_uninstall_hook( __FILE__, array( $setup, 'uninstallRemovedata' ) );
 
-        if(is_admin()) {
-            add_action('admin_menu', array($this, 'initAdminSetupMenu'));
-            add_action( 'admin_init', array( CallMeBack_Block_Admin_Settings::class, 'registerOptions' ) );
-        } else {
-            $controller = new CallMeBack_Controller_DefaultController();
-            add_shortcode( 'callmeback_form', array( $controller, 'phoneRequestAction' ) );
-
-            add_action( 'rest_api_init', function() {
-                $restController = new CallMeBack_Controller_RestController();
-                $restController->registerRoutes();
-            });
+            if ( is_admin() ) {
+                add_action( 'admin_menu', array( $this, 'initAdminSetupMenu' ) );
+                add_action( 'admin_init', array( CallMeBack_Block_Admin_Settings::class, 'registerOptions' ) );
+            } else {
+                $controller = new CallMeBack_Controller_DefaultController();
+                add_shortcode( 'callmeback_form', array( $controller, 'phoneRequestAction' ) );
+            }
         }
+
+        add_action( 'rest_api_init', function() {
+            $restController = new CallMeBack_Controller_RestController();
+            $restController->registerRoutes();
+        });
     }
 
-    private function initAdminSetupMenu(){
+    public function initAdminSetupMenu(){
         $adminController = new CallMeBack_Controller_AdminController();
-        add_filter( 'set-screen-option', [ CallMeBack_Block_Admin_PhoneRequestList::class, 'set_screen' ], 10, 3 );
+        add_filter( 'set-screen-option', [ CallMeBack_Block_Admin_PhoneRequestList::class, 'setScreenOption' ], 10, 3 );
 
         add_menu_page( 'Call Me Back', 'Call Me Back', 'manage_options', 'callme-back',  array ($adminController, 'indexAction'), 'dashicons-phone' );
 
@@ -62,7 +64,7 @@ class CallMeBack_EventDispatcher {
             'callme-back',
             array ($adminController, 'indexAction')
         );
-        add_action( "load-$hook", [ CallMeBack_Block_Admin_PhoneRequestList::class, 'screen_option' ] );
+        add_action( "load-$hook", [ CallMeBack_Block_Admin_PhoneRequestList::class, 'screenOption' ] );
 
         add_submenu_page(
             'callme-back',
